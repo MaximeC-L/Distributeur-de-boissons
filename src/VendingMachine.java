@@ -1,7 +1,12 @@
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class VendingMachine {
     private int balance;
+    private final Scanner scanner = new Scanner(System.in);
+    private List<String> selectedProducts;
 
     public VendingMachine() {
         balance = 0;
@@ -9,7 +14,7 @@ public class VendingMachine {
 
     public String selectProduct() {
         System.out.print("Veuillez sélectionner une option : ");
-        Scanner scanner = new Scanner(System.in);
+
         int choice = scanner.nextInt();
         return switch (choice) {
             case 1 -> "Coke";
@@ -27,8 +32,31 @@ public class VendingMachine {
         while (selectedProduct == null) {
             selectedProduct = selectProduct();
         }
+        selectedProducts.add(selectedProduct);
         System.out.println(selectedProduct + " a été ajouté(e) au panier");
     }
+    public void displayPaymentOption() {
+        System.out.print("Veuillez entrer les pièces");
+        int amount = scanner.nextInt();
+        List<Integer> acceptedCoins = Arrays.asList(5, 10, 20, 50);
+        while (!acceptedCoins.contains(amount)) {
+            System.out.println("Les pièces de " + amount + " ne sont pas acceptées");
+            System.out.print("Veuillez entrer les pièces");
+            amount = scanner.nextInt();
+
+        }
+        System.out.println("La pièce de " + amount + " a été reçue");
+        balance += amount;
+    }
+
+    public void updateBalance(String productName){
+        switch (productName) {
+            case "Coke" -> balance -= 25;
+            case "Sprite" -> balance -= 35;
+            case "Dr.Pepper" -> balance -= 45;
+        }
+    }
+
 
     public void displayMenu() {
         System.out.println("Produits disponibles :");
@@ -41,5 +69,6 @@ public class VendingMachine {
         VendingMachine machine1 = new VendingMachine();
         machine1.displayMenu();
         machine1.displaySelectedProduct();
+        machine1.displayPaymentOption();
     }
 }
