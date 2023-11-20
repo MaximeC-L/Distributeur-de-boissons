@@ -1,16 +1,50 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class VendingMachine {
-    private int balance;
+    private int balance = 0;
     private final Scanner scanner = new Scanner(System.in);
-    private List<String> selectedProducts;
+    private List<String> selectedProducts = new ArrayList<>();
+    private boolean isRunning = true;
+    public void start() {
+        while (isRunning) {
+            int choice = displayMenuActions();
+            switch (choice) {
+                case 1 -> displaySelectedProduct();
+                case 2 -> displayPaymentOption();
+                case 3 -> deliverProduct();
+                case 4 -> cancelOrder();
+                default -> {
+                    System.out.println("L'option sélectionnée n'existe pas");
+                }
 
-    public VendingMachine() {
-        balance = 0;
+            };
+        }
     }
+    private void cancelOrder(){
+        System.out.println("Voulez-vous vraiment annuler la commande? (o/n)");
+        String answer = scanner.nextLine();
+        if(answer.equals("oui") || answer.equals("o")){
+            // Todo implementer remise de l'argent
+            System.out.println("Remise de l'argent");
+            balance = 0;
+            selectedProducts.clear();
+            isRunning = false;
+        }
+    }
+    public int displayMenuActions(){
+        System.out.println("Veuillez sélectionner une option : ");
+        System.out.println("1. Choisir un produit");
+        System.out.println("2. Ajouter une pièce");
+        System.out.println("3. Confirmer la commande");
+        System.out.println("4. Annuler la commande");
+
+        return scanner.nextInt();
+
+    }
+
 
     public String selectProduct() {
         System.out.print("Veuillez sélectionner une option : ");
@@ -58,17 +92,25 @@ public class VendingMachine {
     }
 
 
-    public void displayMenu() {
+    public void displayMenuProducts() {
         System.out.println("Produits disponibles :");
         System.out.println("1. Coke - 25 cents");
         System.out.println("2. Sprite - 35 cents");
         System.out.println("3. Dr.Pepper - 45 cents");
     }
+    public void deliverProduct(){
+        if(balance == 0){
+            // afficher liste produits dans panier
+            selectedProducts.forEach(System.out::println);
+
+        }
+        else{
+            System.out.println("Veuilez insérer le bon montant d'argent avant de compléter la commande");
+        }
+    }
 
     public static void main(String[] args) {
         VendingMachine machine1 = new VendingMachine();
-        machine1.displayMenu();
-        machine1.displaySelectedProduct();
-        machine1.displayPaymentOption();
+        machine1.start();
     }
 }
