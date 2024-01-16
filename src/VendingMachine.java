@@ -17,6 +17,27 @@ public class VendingMachine {
     private final List<Integer> acceptedCoins = Arrays.asList(50, 20, 10, 5);
     private final String logPath = "logMachine.txt";
 
+    public enum Product {
+        COKE(25, "Coke"),
+        SPRITE(35, "Sprite"),
+        DR_PEPPER(45, "Dr.Pepper");
+        private final int price;
+        private final String name;
+
+        Product(int price, String name) {
+            this.name = name;
+            this.price = price;
+        }
+
+        public int getPrice() {
+            return price;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
 
     public void start() {
         while (isRunning) {
@@ -73,9 +94,9 @@ public class VendingMachine {
 
         int choice = readNumber();
         return switch (choice) {
-            case 1 -> "Coke";
-            case 2 -> "Sprite";
-            case 3 -> "Dr.Pepper";
+            case 1 -> Product.COKE.getName();
+            case 2 -> Product.SPRITE.getName();
+            case 3 -> Product.DR_PEPPER.getName();
             default -> {
                 System.out.println("L'option sélectionnée n'existe pas");
                 yield null;
@@ -90,7 +111,7 @@ public class VendingMachine {
             selectedProduct = selectProduct();
         }
         selectedProducts.add(selectedProduct);
-        updateBalance(selectedProduct);
+        updateBalance(Product.valueOf(selectedProduct.toUpperCase()));
         System.out.println(selectedProduct + " a été ajouté(e) au panier");
     }
 
@@ -109,20 +130,18 @@ public class VendingMachine {
     }
 
     //Todo utiliser la fonction updateBalance
-    public void updateBalance(String productName) {
-        switch (productName) {
-            case "Coke" -> totalProducts += 25;
-            case "Sprite" -> totalProducts += 35;
-            case "Dr.Pepper" -> totalProducts += 45;
-        }
+    public void updateBalance(Product productName) {
+        totalProducts += productName.getPrice();
+
     }
 
 
     public void displayMenuProducts() {
         System.out.println("Produits disponibles :");
-        System.out.println("1. Coke - 25 cents");
-        System.out.println("2. Sprite - 35 cents");
-        System.out.println("3. Dr.Pepper - 45 cents");
+        for (Product product : Product.values()) {
+            System.out.println(product.ordinal() + 1 + ". " + product.getName() + " - " + product.getPrice() + " cents");
+        }
+
     }
 
     public void deliverProduct() {
@@ -130,12 +149,16 @@ public class VendingMachine {
             // afficher liste produits dans panier
             selectedProducts.forEach(System.out::println);
             selectedProducts.clear();
+            totalCoins = 0;
+            totalProducts = 0;
             writeLog("Une commande a été complétée");
         } else if (totalCoins < totalProducts) {
             System.out.println("Veuillez insérer " + Math.abs(totalProducts - totalCoins) + " sous avant de compléter la commande");
         } else {
             selectedProducts.forEach(System.out::println);
             selectedProducts.clear();
+            totalCoins -= totalProducts;
+            totalProducts = 0;
             giveMoneyBack();
         }
     }
