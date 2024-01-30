@@ -1,41 +1,30 @@
+import javax.print.DocFlavor;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class VendingMachine {
     private int totalCoins = 0;
     private int totalProducts = 0;
     private final Scanner scanner = new Scanner(System.in);
-    private final List<String> selectedProducts = new ArrayList<>();
+    private final List<Product> selectedProducts = new ArrayList<>();
     private boolean isRunning = true;
     private final List<Integer> acceptedCoins = Arrays.asList(50, 20, 10, 5);
     private final String logPath = "logMachine.txt";
+    private Map<Product, Integer> stock = new HashMap<>();
+    private final List<Product> inventory = Arrays.asList(
+            new Product("Coke", 25),
+            new Product("Sprite", 35),
+            new Product("Dr.Pepper", 45)
+    );
 
-    public enum Product {
-        COKE(25, "Coke"),
-        SPRITE(35, "Sprite"),
-        DR_PEPPER(45, "Dr.Pepper");
-        private final int price;
-        private final String name;
-
-        Product(int price, String name) {
-            this.name = name;
-            this.price = price;
-        }
-
-        public int getPrice() {
-            return price;
-        }
-
-        public String getName() {
-            return name;
-        }
+    VendingMachine() {
+        stock.put(inventory.get(0), 3);
+        stock.put(inventory.get(1), 5);
+        stock.put(inventory.get(2), 2);
     }
 
 
@@ -89,29 +78,26 @@ public class VendingMachine {
     }
 
 
-    public String selectProduct() {
+    public Product selectProduct() {
         System.out.print("Veuillez sélectionner une option : ");
 
-        int choice = readNumber();
-        return switch (choice) {
-            case 1 -> Product.COKE.getName();
-            case 2 -> Product.SPRITE.getName();
-            case 3 -> Product.DR_PEPPER.getName();
-            default -> {
-                System.out.println("L'option sélectionnée n'existe pas");
-                yield null;
-            }
-        };
+        int choice = readNumber() - 1;
+        if (choice > 0 && choice < inventory.size()) {
+            return inventory.get(choice);
+        } else {
+            System.out.println("L'option sélectionnée n'existe pas");
+            return null;
+        }
     }
 
     public void displaySelectedProduct() {
         displayMenuProducts();
-        String selectedProduct = selectProduct();
+        Product selectedProduct = selectProduct();
         while (selectedProduct == null) {
             selectedProduct = selectProduct();
         }
         selectedProducts.add(selectedProduct);
-        updateBalance(Product.valueOf(selectedProduct.toUpperCase()));
+        updateBalance(stock.get(selectedProduct));
         System.out.println(selectedProduct + " a été ajouté(e) au panier");
     }
 
@@ -129,21 +115,23 @@ public class VendingMachine {
         totalCoins += amount;
     }
 
-    //Todo utiliser la fonction updateBalance
-    public void updateBalance(Product productName) {
-        totalProducts += productName.getPrice();
-
+    //Todo revoir utilite fonction
+    public void updateBalance(Integer price) {
+        totalProducts += price;
     }
 
 
     public void displayMenuProducts() {
         System.out.println("Produits disponibles :");
-        for (Product product : Product.values()) {
-            System.out.println(product.ordinal() + 1 + ". " + product.getName() + " - " + product.getPrice() + " cents");
+        int i = 1;
+        for (Product product : inventory) {
+            System.out.println(i + ". " + product.getName() + " - " + product.getPrice() + " cents");
+            i++;
         }
 
     }
 
+    //todo sjuster le stock
     public void deliverProduct() {
         if (totalCoins == totalProducts) {
             // afficher liste produits dans panier
