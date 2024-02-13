@@ -34,8 +34,9 @@ public class VendingMachine {
             switch (choice) {
                 case 1 -> displaySelectedProduct();
                 case 2 -> displayPaymentOption();
-                case 3 -> deliverProduct();
-                case 4 -> cancelOrder();
+                case 3 -> displayCart();
+                case 4 -> deliverProduct();
+                case 5 -> cancelOrder();
                 default -> System.out.println("L'option sélectionnée n'existe pas");
             }
         }
@@ -70,8 +71,9 @@ public class VendingMachine {
         System.out.println("Veuillez sélectionner une option : ");
         System.out.println("1. Choisir un produit");
         System.out.println("2. Ajouter une pièce");
-        System.out.println("3. Confirmer la commande");
-        System.out.println("4. Annuler la commande");
+        System.out.println("3. Afficher le panier");
+        System.out.println("4. Confirmer la commande");
+        System.out.println("5. Annuler la commande");
 
         return readNumber();
 
@@ -82,11 +84,25 @@ public class VendingMachine {
         System.out.print("Veuillez sélectionner une option : ");
 
         int choice = readNumber() - 1;
-        if (choice > 0 && choice < inventory.size()) {
+        if (choice >= 0 && choice < inventory.size()) {
             return inventory.get(choice);
         } else {
             System.out.println("L'option sélectionnée n'existe pas");
             return null;
+        }
+    }
+
+    //todo facon afficher plusieurs fois meme produit
+    private void displayCart() {
+        System.out.println("Contenu du panier:");
+        for (Product p : selectedProducts) {
+            System.out.println(p.getName());
+        }
+        System.out.println("Total: " + totalProducts + " cents");
+        if (totalCoins - totalProducts > 0) {
+            System.out.println("Vous avez inséré " + totalCoins + " cents");
+        } else {
+            System.out.println("Il vous reste " + (totalProducts - totalCoins) + " cents à payer");
         }
     }
 
@@ -97,8 +113,8 @@ public class VendingMachine {
             selectedProduct = selectProduct();
         }
         selectedProducts.add(selectedProduct);
-        updateBalance(stock.get(selectedProduct));
-        System.out.println(selectedProduct + " a été ajouté(e) au panier");
+        updateBalance(selectedProduct.getPrice());
+        System.out.println(selectedProduct.getName() + " a été ajouté(e) au panier");
     }
 
     public void displayPaymentOption() {
@@ -115,7 +131,7 @@ public class VendingMachine {
         totalCoins += amount;
     }
 
-    //Todo revoir utilite fonction
+
     public void updateBalance(Integer price) {
         totalProducts += price;
     }
@@ -131,24 +147,28 @@ public class VendingMachine {
 
     }
 
-    //todo sjuster le stock
+    //todo ajuster le stock
     public void deliverProduct() {
+        if (totalCoins < totalProducts) {
+            System.out.println("Veuillez insérer " + Math.abs(totalProducts - totalCoins) + " sous avant de compléter la commande");
+            return;
+        }
+
+        // afficher liste produits dans panier
+        for (Product p : selectedProducts) {
+            System.out.println(p.getName());
+        }
+        selectedProducts.clear();
         if (totalCoins == totalProducts) {
-            // afficher liste produits dans panier
-            selectedProducts.forEach(System.out::println);
-            selectedProducts.clear();
             totalCoins = 0;
             totalProducts = 0;
-            writeLog("Une commande a été complétée");
-        } else if (totalCoins < totalProducts) {
-            System.out.println("Veuillez insérer " + Math.abs(totalProducts - totalCoins) + " sous avant de compléter la commande");
+
         } else {
-            selectedProducts.forEach(System.out::println);
-            selectedProducts.clear();
             totalCoins -= totalProducts;
             totalProducts = 0;
             giveMoneyBack();
         }
+        writeLog("Une commande a été complétée");
     }
 
     private void writeLog(String message) {
