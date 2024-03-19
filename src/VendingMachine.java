@@ -10,7 +10,7 @@ public class VendingMachine {
     private int totalCoins = 0;
     private int totalProducts = 0;
     private final Scanner scanner = new Scanner(System.in);
-    private final List<Product> selectedProducts = new ArrayList<>();
+    private final Map<Product, Integer> selectedProducts = new HashMap<>();
     private boolean isRunning = true;
     private final List<Integer> acceptedCoins = Arrays.asList(50, 20, 10, 5);
     private final String logPath = "logMachine.txt";
@@ -22,11 +22,27 @@ public class VendingMachine {
     );
 
     VendingMachine() {
-        stock.put(inventory.get(0), 3);
-        stock.put(inventory.get(1), 5);
-        stock.put(inventory.get(2), 2);
+        for (Product p : inventory) {
+            stock.put(p, 3);
+            selectedProducts.put(p, 0);
+        }
     }
 
+    VendingMachine(Integer stockCustom) {
+        for (Product p : inventory) {
+            stock.put(p, stockCustom);
+            selectedProducts.put(p, 0);
+        }
+    }
+
+    VendingMachine(Integer stockCoke, Integer stockSprite, Integer stockDrPepper) {
+        stock.put(inventory.get(0), stockCoke);
+        stock.put(inventory.get(1), stockSprite);
+        stock.put(inventory.get(2), stockDrPepper);
+        for (Product p : inventory) {
+            selectedProducts.put(p, 0);
+        }
+    }
 
     public void start() {
         while (isRunning) {
@@ -92,11 +108,12 @@ public class VendingMachine {
         }
     }
 
-    //todo facon afficher plusieurs fois meme produit
     private void displayCart() {
         System.out.println("Contenu du panier:");
-        for (Product p : selectedProducts) {
-            System.out.println(p.getName());
+        for (Map.Entry<Product, Integer> p : selectedProducts.entrySet()) {
+            if (p.getValue() != 0) {
+                System.out.println(p.getValue() + "x " + p.getKey().getName());
+            }
         }
         System.out.println("Total: " + totalProducts + " cents");
         if (totalCoins - totalProducts > 0) {
@@ -112,7 +129,7 @@ public class VendingMachine {
         while (selectedProduct == null) {
             selectedProduct = selectProduct();
         }
-        selectedProducts.add(selectedProduct);
+        selectedProducts.put(selectedProduct, selectedProducts.get(selectedProduct) + 1);
         updateBalance(selectedProduct.getPrice());
         System.out.println(selectedProduct.getName() + " a été ajouté(e) au panier");
     }
@@ -147,7 +164,9 @@ public class VendingMachine {
 
     }
 
-    //todo ajuster le stock
+    //todo verifier le stock
+    //todo fix warnings
+    //todo maintenance avec lecture
     public void deliverProduct() {
         if (totalCoins < totalProducts) {
             System.out.println("Veuillez insérer " + Math.abs(totalProducts - totalCoins) + " sous avant de compléter la commande");
@@ -155,9 +174,13 @@ public class VendingMachine {
         }
 
         // afficher liste produits dans panier
-        for (Product p : selectedProducts) {
-            System.out.println(p.getName());
+        for (Map.Entry<Product, Integer> p : selectedProducts.entrySet()) {
+            if (p.getValue() != 0) {
+                System.out.println(p.getValue() + "x " + p.getKey().getName());
+                stock.put(p.getKey(), stock.get(p.getKey()) - p.getValue());
+            }
         }
+
         selectedProducts.clear();
         if (totalCoins == totalProducts) {
             totalCoins = 0;
@@ -190,6 +213,8 @@ public class VendingMachine {
 
     public static void main(String[] args) {
         VendingMachine machine1 = new VendingMachine();
+        VendingMachine machine2 = new VendingMachine(3, 5, 2);
+        VendingMachine machine3 = new VendingMachine(10);
         machine1.start();
     }
 }
